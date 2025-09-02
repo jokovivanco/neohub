@@ -1,10 +1,6 @@
 {
-  "extends": [
-    "config:recommended"
-  ],
-  "baseBranches": [
-    "dev"
-  ],
+  "extends": ["config:recommended"],
+  "baseBranches": ["dev"],
   "packageRules": [
     {
       "matchDepTypes": ["dependencies", "devDependencies"],
@@ -16,10 +12,7 @@
     {
       "matchDepTypes": ["devDependencies"],
       "automerge": true,
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ]
+      "matchUpdateTypes": ["minor", "patch"]
     },
 
     {
@@ -46,8 +39,5 @@
   "schedule": ["every weekend"],
   "timezone": "Asia/Kolkata",
   "branchPrefix": "renovate/",
-  "labels": [
-    "dependencies",
-    "auto-update"
-  ]
+  "labels": ["dependencies", "auto-update"]
 }

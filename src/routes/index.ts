@@ -14,6 +14,7 @@ import * as AuthSignInRoute from "@/app/(auth)/sign-in/page.info";
 import * as AuthSignUpRoute from "@/app/(auth)/sign-up/page.info";
 import * as DashboardAdminRoute from "@/app/(dashboard)/admin/page.info";
 import * as DashboardUserRoute from "@/app/(dashboard)/user/page.info";
+import * as RootRoute from "@/app/(root)/page.info";
 import * as ApiAuthAllRoute from "@/app/api/auth/[...all]/route.info";
 
 export const Home = makeRoute(
@@ -70,6 +71,13 @@ export const DashboardUser = makeRoute(
   {
     ...defaultInfo,
     ...DashboardUserRoute.Route
+  }
+);
+export const Root = makeRoute(
+  "/(root)",
+  {
+    ...defaultInfo,
+    ...RootRoute.Route
   }
 );
 export const ApiAuthAll = makeRoute(

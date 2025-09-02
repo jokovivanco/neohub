@@ -20,13 +20,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-background text-foreground min-h-screen">
       {/* Main content */}
       <div className="container mx-auto max-w-5xl px-4">
         <main className="pt-32 pb-20">
           {/* Hero */}
           <div className="max-w-3xl space-y-8">
-            <h1 className="text-4xl leading-tight font-light text-black sm:text-5xl">
+            <h1 className="text-4xl leading-tight font-light sm:text-5xl">
               <span className="text-6xl font-semibold uppercase">
                 Supercharge
               </span>{" "}
@@ -34,7 +34,7 @@ export default function Home() {
               your next Next.js project.
             </h1>
 
-            <p className="text-lg leading-relaxed text-zinc-500">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               Unlock the potential of a cutting-edge Next.js template, equipped
               with seamless authentication, robust database integration, and
               advanced tooling. Empowering developers of all levels to build
@@ -44,14 +44,14 @@ export default function Home() {
             {/* Primary actions */}
             <div className="flex flex-col gap-4 pt-4 sm:flex-row">
               <Link href="https://github.com/new?template_name=nextjs-template&template_owner=Its-Satyajit">
-                <Button className="w-full rounded-full bg-black px-8 text-white hover:bg-zinc-800 sm:w-auto">
+                <Button className="w-full rounded-full px-8 sm:w-auto">
                   Get started
                 </Button>
               </Link>
               <Link href="https://github.com/Its-Satyajit/nextjs-template">
                 <Button
                   variant="outline"
-                  className="w-full rounded-full border-zinc-200 px-8 text-zinc-600 hover:bg-zinc-50 sm:w-auto"
+                  className="w-full rounded-full px-8 sm:w-auto"
                 >
                   <SiGithub className="mr-2 h-4 w-4" />
                   View source
@@ -64,7 +64,7 @@ export default function Home() {
           <div className="mt-32 space-y-20">
             {Object.entries(technologies).map(([category, techs]) => (
               <section key={category} className="space-y-6">
-                <h2 className="text-sm font-medium tracking-wider text-zinc-400 uppercase">
+                <h2 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </h2>
                 <div className="flex flex-wrap gap-3">
@@ -78,7 +78,7 @@ export default function Home() {
 
           {/* Features */}
           <section className="mt-32">
-            <h2 className="mb-12 text-sm font-medium tracking-wider text-zinc-400 uppercase">
+            <h2 className="text-muted-foreground mb-12 text-sm font-medium tracking-wider uppercase">
               Key Features
             </h2>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -113,8 +113,8 @@ export default function Home() {
                 },
               ].map((feature) => (
                 <div key={feature.title} className="space-y-2">
-                  <h3 className="font-medium text-black">{feature.title}</h3>
-                  <p className="text-sm leading-relaxed text-zinc-500">
+                  <h3 className="font-medium">{feature.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </div>

@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 
 import { AuthSignIn, AuthSignUp, DashboardAdmin, Home } from "@/routes";
 
+import Logo from "@/components/custom/logo";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { signOut, useSession } from "@/lib/auth/auth-client";
-
-import Logo from "../custom/logo";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Button } from "../ui/button";
 
 export default function Header() {
   const router = useRouter();
@@ -35,17 +34,17 @@ export default function Header() {
                 <DropdownMenuTrigger>
                   <Avatar>
                     <AvatarImage
-                      src="/images/77627641.jpg"
-                      alt="@its-Satyajit"
+                      src={session.user.image || "/images/77627641.jpg"}
+                      alt={session.user.name || "anon"}
                     />
-                    <AvatarFallback>Its-Satyajit</AvatarFallback>
+                    <AvatarFallback>Anon</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuLabel>{session.user.name}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer">
-                    <DashboardAdmin.Link>DashBoard</DashboardAdmin.Link>
+                    <DashboardAdmin.Link>Dashboard</DashboardAdmin.Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer"

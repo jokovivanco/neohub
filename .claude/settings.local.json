@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__shadcn__list_items_in_registries",
+      "mcp__shadcn__view_items_in_registries"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["shadcn", "context7", "playwright"]
+}
