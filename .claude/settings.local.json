@@ -10,9 +10,14 @@
       "mcp__playwright__browser_evaluate",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["shadcn", "context7", "playwright"]
+  "enabledMcpjsonServers": [
+    "shadcn",
+    "context7",
+    "playwright"
+  ]
 }

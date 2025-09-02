@@ -7,6 +7,7 @@ import ProductFilters, {
   type FilterOptions,
   type FilterState,
 } from "@/components/ProductFilters";
+import Hero from "@/components/section/Hero";
 
 const sampleProducts = [
   {
@@ -227,15 +228,7 @@ export default function Home() {
     <div className="bg-background text-foreground min-h-screen">
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="mb-16 text-center">
-          <h1 className="mb-4 text-4xl font-bold sm:text-5xl lg:text-6xl">
-            Discover Amazing Products
-          </h1>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-            Explore our curated collection of premium products designed to
-            enhance your lifestyle with quality and innovation.
-          </p>
-        </div>
+        <Hero />
 
         {/* Products Section with Filters */}
         <div className="mb-12">
