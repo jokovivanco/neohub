@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 export const metadata: Metadata = {
   title: "NeoHub – Shop Smarter, Faster, and Modern",
   description:
-    "NeoHub is a modern fullstack ecommerce platform built with Next.js, Better Auth, Tailwind, shadcn, Drizzle ORM, and PostgreSQL (Neon).",
+    "NeoHub brings the future of ecommerce with seamless shopping, secure checkout, and powerful analytics – built on modern web technologies.",
 };
 
 export default function RootLayout({
@@ -31,10 +31,6 @@ export default function RootLayout({
           >
             <div>
               {children}
-              {/* <div className="grid h-screen grid-rows-[auto_1fr_auto]">
-                <div className="prose-base container mx-auto py-3">
-                </div>
-              </div> */}
               <Toaster />
             </div>
           </ThemeProvider>

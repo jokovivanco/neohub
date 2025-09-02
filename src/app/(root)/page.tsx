@@ -1,4 +1,12 @@
+"use client";
+
+import { useCallback, useMemo, useState } from "react";
+
 import ProductCard from "@/components/ProductCard";
+import ProductFilters, {
+  type FilterOptions,
+  type FilterState,
+} from "@/components/ProductFilters";
 
 const sampleProducts = [
   {
@@ -87,9 +95,134 @@ const sampleProducts = [
     isNew: false,
     isSale: false,
   },
+  {
+    id: "7",
+    name: "Budget Wireless Earbuds",
+    description:
+      "Affordable wireless earbuds with decent sound quality for everyday use and basic listening needs.",
+    price: 150000,
+    image:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop",
+    rating: 3.2,
+    reviewCount: 45,
+    category: "Electronics",
+    isNew: false,
+    isSale: false,
+  },
+  {
+    id: "8",
+    name: "Basic Office Mug",
+    description:
+      "Simple ceramic mug for coffee or tea, perfect for daily office use with standard capacity.",
+    price: 25000,
+    image:
+      "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&h=500&fit=crop",
+    rating: 3.8,
+    reviewCount: 23,
+    category: "Food & Beverage",
+    isNew: false,
+    isSale: false,
+  },
 ];
 
+const filterOptions: FilterOptions = {
+  categories: [
+    "Electronics",
+    "Furniture",
+    "Fashion",
+    "Food & Beverage",
+    "Wearables",
+  ],
+  priceRanges: [
+    { label: "Under IDR 500K", min: 0, max: 500000 },
+    { label: "IDR 500K - 1M", min: 500000, max: 1000000 },
+    { label: "IDR 1M - 2M", min: 1000000, max: 2000000 },
+    { label: "IDR 2M - 5M", min: 2000000, max: 5000000 },
+    { label: "Above IDR 5M", min: 5000000 },
+  ],
+  ratings: [4, 3, 2, 1],
+};
+
 export default function Home() {
+  const [filters, setFilters] = useState<FilterState>({
+    category: "",
+    priceRange: "",
+    rating: "",
+    sortBy: "name",
+    isNew: false,
+    isSale: false,
+  });
+
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = [...sampleProducts];
+
+    // Apply category filter
+    if (filters.category) {
+      filtered = filtered.filter(
+        (product) => product.category === filters.category,
+      );
+    }
+
+    // Apply price range filter
+    if (filters.priceRange) {
+      const priceRange = filterOptions.priceRanges.find(
+        (range) => range.label === filters.priceRange,
+      );
+      if (priceRange) {
+        filtered = filtered.filter((product) => {
+          if (priceRange.max) {
+            return (
+              product.price >= priceRange.min && product.price <= priceRange.max
+            );
+          } else {
+            return product.price >= priceRange.min;
+          }
+        });
+      }
+    }
+
+    // Apply rating filter
+    if (filters.rating) {
+      const minRating = parseFloat(filters.rating);
+      filtered = filtered.filter((product) => product.rating >= minRating);
+    }
+
+    // Apply special filters
+    if (filters.isNew) {
+      filtered = filtered.filter((product) => product.isNew);
+    }
+    if (filters.isSale) {
+      filtered = filtered.filter((product) => product.isSale);
+    }
+
+    // Apply sorting
+    switch (filters.sortBy) {
+      case "name":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "rating":
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      case "newest":
+        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  }, [filters]);
+
+  const handleFiltersChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters);
+  }, []);
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
@@ -104,15 +237,52 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Featured Products Section */}
+        {/* Products Section with Filters */}
         <div className="mb-12">
           <h2 className="mb-8 text-center text-2xl font-semibold sm:text-3xl">
             Featured Products
           </h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {sampleProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="lg:scrollbar-thin lg:scrollbar-thumb-gray-300 lg:scrollbar-track-gray-100 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+                <ProductFilters
+                  options={filterOptions}
+                  onFiltersChange={handleFiltersChange}
+                />
+              </div>
+            </div>
+
+            {/* Products Grid */}
+            <div className="lg:col-span-3">
+              {filteredAndSortedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredAndSortedProducts.map((product) => (
+                    <ProductCard key={product.id} {...product} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-64 items-center justify-center">
+                  <div className="text-center">
+                    <h3 className="mb-2 text-lg font-semibold">
+                      No products found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your filters to see more products.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Results Count */}
+              <div className="mt-8 text-center">
+                <p className="text-muted-foreground text-sm">
+                  Showing {filteredAndSortedProducts.length} of{" "}
+                  {sampleProducts.length} products
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
