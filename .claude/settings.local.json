@@ -1,0 +1,7 @@
+{
+  "enabledMcpjsonServers": [
+    "shadcn",
+    "context7",
+    "playwright"
+  ]
+}

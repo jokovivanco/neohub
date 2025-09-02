@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-import { AuthForgotPassword, Home } from "@/routes";
+import { AuthForgotPassword, AuthSignUp, Home } from "@/routes";
 import type { ErrorContext } from "@better-fetch/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SiGithub } from "@icons-pack/react-simple-icons";
@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-// import LoadingButton from "@/components/loading-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -22,15 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 import { signIn } from "@/lib/auth/auth-client";
 import { signInSchema } from "@/lib/auth/schema";
 
 export default function SignIn() {
   const router = useRouter();
-
-  // const [pendingCredentials, setPendingCredentials] = useState(false);
-  // const [pendingGithub, setPendingGithub] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -55,18 +51,19 @@ export default function SignIn() {
         onSuccess: async () => {
           router.push(Home());
           router.refresh();
-          toast.success("Successfully signed in!", {
-            description: "You have successfully signed in!",
+          toast.success("Welcome back!", {
+            description: "You have successfully signed in.",
           });
         },
         onError: (ctx: ErrorContext) => {
-          toast.error("Something went wrong!", {
-            description: ctx.error.message ?? "Something went wrong.",
+          toast.error("Sign in failed", {
+            description:
+              ctx.error.message ??
+              "Please check your credentials and try again.",
           });
         },
       },
     );
-    // setPendingCredentials(false);
   };
 
   const handleSignInWithGithub = async () => {
@@ -83,74 +80,106 @@ export default function SignIn() {
           router.refresh();
         },
         onError: (ctx: ErrorContext) => {
-          toast.error("Something went wrong!", {
-            description: ctx.error.message ?? "Something went wrong.",
+          toast.error("GitHub sign in failed", {
+            description:
+              ctx.error.message ??
+              "Something went wrong with GitHub authentication.",
           });
         },
       },
     );
-    // setPendingGithub(false);
   };
 
   return (
-    <div className="flex grow items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center text-3xl font-bold text-gray-800">
-            Sign In
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleCredentialsSignIn)}
-              className="space-y-6"
-            >
-              {["email", "password"].map((field) => (
-                <FormField
-                  control={form.control}
-                  key={field}
-                  name={field as keyof z.infer<typeof signInSchema>}
-                  render={({ field: fieldProps }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {field.charAt(0).toUpperCase() + field.slice(1)}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type={field === "password" ? "password" : "email"}
-                          placeholder={`Enter your ${field}`}
-                          {...fieldProps}
-                          autoComplete={
-                            field === "password" ? "current-password" : "email"
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
-              <Button className="w-full">Sign in</Button>
-            </form>
-          </Form>
-          <div className="mt-4">
-            <Button
-              className="w-full"
-              // pending={pendingGithub}
-              onClick={handleSignInWithGithub}
-            >
-              <SiGithub className="mr-2 h-4 w-4" />
-              Continue with GitHub
+    <div className="space-y-6">
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-muted-foreground text-sm">
+          Enter your credentials to access your account
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleSignInWithGithub}
+        >
+          <SiGithub className="mr-2 h-4 w-4" />
+          Continue with GitHub
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background text-muted-foreground px-2">
+              Or continue with email
+            </span>
+          </div>
+        </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleCredentialsSignIn)}
+            className="space-y-4"
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full">
+              Sign in
             </Button>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            <AuthForgotPassword.Link className="text-primary hover:underline">
-              Forgot password?
-            </AuthForgotPassword.Link>
-          </div>
-        </CardContent>
-      </Card>
+          </form>
+        </Form>
+      </div>
+
+      <div className="space-y-4 text-center text-sm">
+        <AuthForgotPassword.Link className="text-primary hover:underline">
+          Forgot your password?
+        </AuthForgotPassword.Link>
+
+        <div className="text-muted-foreground">
+          Don't have an account?{" "}
+          <AuthSignUp.Link className="text-primary font-medium hover:underline">
+            Sign up
+          </AuthSignUp.Link>
+        </div>
+      </div>
     </div>
   );
 }
