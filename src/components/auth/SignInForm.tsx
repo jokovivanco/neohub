@@ -25,7 +25,7 @@ import { type SignInFormData } from "@/lib/auth/zodType";
 interface SignInFormProps {
   onSubmit: (
     data: SignInFormData,
-  ) => Promise<{ ok: boolean; userId?: string } | void>;
+  ) => Promise<{ ok: boolean; userId?: string; error?: string } | void>;
 }
 
 const SignInForm = ({ onSubmit }: SignInFormProps) => {
@@ -47,7 +47,8 @@ const SignInForm = ({ onSubmit }: SignInFormProps) => {
         if (response?.ok) {
           toast.success("Welcome back!");
           router.push(Home());
-          router.refresh();
+        } else {
+          toast.error(response?.error);
         }
       } catch (error) {
         console.log(error);

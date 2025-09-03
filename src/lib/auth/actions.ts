@@ -3,8 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { randomUUID } from "crypto";
-import { and, eq, lt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/db";
@@ -22,69 +21,111 @@ const COOKIE_OPTIONS = {
 };
 
 export async function createGuestSession() {
-  const cookieStore = await cookies(); // cookie from header
-  const existing = cookieStore.get("guest_session");
-  if (existing?.value) {
-    // if exist, return the existed
-    return { ok: true, sessionToken: existing.value };
+  try {
+    // Prepare data creation
+    const sessionToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + COOKIE_OPTIONS.maxAge * 1000); // 7 days
+
+    // Add data to database (guest)
+    await db.insert(guest).values({
+      sessionToken,
+      expiresAt,
+    });
+
+    // Create the cookie
+    const cookieStore = await cookies();
+    cookieStore.set("guest_session", sessionToken, COOKIE_OPTIONS);
+
+    return { ok: true, sessionToken };
+  } catch (error) {
+    console.error("Create guest session error:", error);
+    return {
+      ok: false,
+      error: "Failed to create guest session",
+    };
   }
-
-  const sessionToken = randomUUID();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + COOKIE_OPTIONS.maxAge * 1000);
-
-  await db.insert(guest).values({
-    sessionToken,
-    expiresAt,
-  });
-
-  cookieStore.set("guest_session", sessionToken, COOKIE_OPTIONS);
-  return { ok: true, sessionToken };
 }
 
-export async function guestSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("guest_session")?.value;
-  if (!token) {
-    return { sessionToken: null };
-  }
-  const now = new Date();
-  await db
-    .delete(guest)
-    .where(and(eq(guest.sessionToken, token), lt(guest.expiresAt, now)));
+export async function getGuestSession() {
+  try {
+    const cookieStore = await cookies();
+    const guestSessionToken = cookieStore.get("guest_session")?.value;
 
-  return { sessionToken: token };
+    if (!guestSessionToken) {
+      return null;
+    }
+
+    const guestSession = await db
+      .select()
+      .from(guest)
+      .where(eq(guest.sessionToken, guestSessionToken))
+      .limit(1);
+
+    if (guestSession.length === 0) {
+      cookieStore.delete("guest_session");
+      return null;
+    }
+
+    const session = guestSession[0];
+
+    if (session.expiresAt < new Date()) {
+      await db.delete(guest).where(eq(guest.sessionToken, guestSessionToken));
+      cookieStore.delete("guest_session");
+      return null;
+    }
+
+    return session;
+  } catch (error) {
+    console.error("Get guest session error:", error);
+    return null;
+  }
 }
 
 export async function signUp(payload: SignUpFormData) {
-  const data = signUpSchema.parse(payload);
+  try {
+    const data = signUpSchema.parse(payload);
 
-  const res = await auth.api.signUpEmail({
-    body: {
-      email: data.email,
-      password: data.password,
-      name: data.name,
-    },
-  });
+    const res = await auth.api.signUpEmail({
+      body: {
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      },
+    });
 
-  // delete guest session if any after sign in
-  await migrateGuestToUser();
-  return { ok: true, userId: res.user?.id };
+    // delete guest session if any after sign in
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
+  } catch (error) {
+    console.error("Sign up error:", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Sign up failed",
+    };
+  }
 }
 
 export async function signIn(payload: SignInFormData) {
-  const data = signInSchema.parse(payload);
+  try {
+    const data = signInSchema.parse(payload);
 
-  const res = await auth.api.signInEmail({
-    body: {
-      email: data.email,
-      password: data.password,
-    },
-  });
+    const res = await auth.api.signInEmail({
+      body: {
+        email: data.email,
+        password: data.password,
+      },
+    });
 
-  // delete guest session if any after sign in
-  await migrateGuestToUser();
-  return { ok: true, userId: res.user?.id };
+    // delete guest session if any after sign in
+    await migrateGuestToUser();
+    return { ok: true, userId: res.user?.id };
+  } catch (error) {
+    console.error("Sign in error:", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Sign in failed",
+    };
+  }
 }
 
 export async function getCurrentUser() {
@@ -106,7 +147,6 @@ export async function signInGitHub() {
       provider: "github",
     },
   });
-
   if (response?.url) {
     redirect(response.url);
   }
@@ -116,18 +156,46 @@ export async function signInGitHub() {
 }
 
 export async function signOut() {
-  await auth.api.signOut({
+  try {
+    await auth.api.signOut({
+      headers: await headers(),
+    });
+    return { ok: true };
+  } catch (error) {
+    console.error("Sign out error:", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Sign out failed",
+    };
+  }
+}
+
+export async function requireAuth() {
+  const session = await auth.api.getSession({
     headers: await headers(),
   });
-  redirect("/");
+
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
+  return session;
 }
 
 // guest session into user -- delete current guest session
 async function migrateGuestToUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("guest_session")?.value;
-  if (!token) return;
+  try {
+    const guestSession = await getGuestSession();
+    if (!guestSession) return;
 
-  await db.delete(guest).where(eq(guest.sessionToken, token));
-  cookieStore.delete("guest_session");
+    // Here you would merge guest cart data with user account
+    // For now, we'll just clean up the guest session
+    await db
+      .delete(guest)
+      .where(eq(guest.sessionToken, guestSession.sessionToken));
+    const cookieStore = await cookies();
+    cookieStore.delete("guest_session");
+  } catch (error) {
+    console.error("Merge guest data error:", error);
+  }
 }

@@ -1,6 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+
+import { Home } from "@/routes";
 import { LogOut, Settings, UserCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -11,7 +16,16 @@ interface MobileUserSectionProps {
     image?: string | null;
   };
   onMenuClose: () => void;
-  onSignOut: () => Promise<void>;
+  onSignOut: () => Promise<
+    | {
+        ok: boolean;
+        error?: undefined;
+      }
+    | {
+        ok: boolean;
+        error: string;
+      }
+  >;
 }
 
 export default function MobileUserSection({
@@ -19,8 +33,26 @@ export default function MobileUserSection({
   onMenuClose,
   onSignOut,
 }: MobileUserSectionProps) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
   const handleSignOut = async () => {
-    await onSignOut();
+    startTransition(async () => {
+      try {
+        const response = await onSignOut();
+
+        if (response?.ok) {
+          toast.success("You have safely logged out");
+          router.push(Home());
+          router.refresh();
+        } else {
+          toast.error(response?.error);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
     onMenuClose();
   };
 
@@ -57,10 +89,11 @@ export default function MobileUserSection({
         </button>
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center rounded-md px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+          className="flex w-full items-center rounded-md px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:pointer-events-none disabled:text-red-800"
+          disabled={isPending}
         >
           <LogOut className="mr-3 h-4 w-4" />
-          Sign out
+          {isPending ? "Signing out..." : "Sign out"}
         </button>
       </div>
     </div>

@@ -25,7 +25,7 @@ import { type SignUpFormData } from "@/lib/auth/zodType";
 interface SignUpInFormProps {
   onSubmit: (
     data: SignUpFormData,
-  ) => Promise<{ ok: boolean; userId?: string } | void>;
+  ) => Promise<{ ok: boolean; userId?: string; error?: string } | void>;
 }
 
 const SignUpForm = ({ onSubmit }: SignUpInFormProps) => {
@@ -49,7 +49,8 @@ const SignUpForm = ({ onSubmit }: SignUpInFormProps) => {
         if (response?.ok) {
           toast.success("Please check your email to verify your account.");
           router.push(Home());
-          router.refresh();
+        } else {
+          toast.error(response?.error);
         }
       } catch (error) {
         console.log(error);

@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { AuthForgotPassword, AuthSignIn } from "@/routes";
+import { AuthSignIn } from "@/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -27,7 +27,7 @@ function ResetPasswordContent() {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const error = searchParams.get("error");
+  const token = searchParams.get("token");
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm<z.infer<typeof resetPasswordSchema>>({
@@ -42,6 +42,7 @@ function ResetPasswordContent() {
     setIsPending(true);
     const { error } = await resetPassword({
       newPassword: data.password,
+      token: token || undefined,
     });
     if (error) {
       toast.error("Password reset failed", {
@@ -56,55 +57,55 @@ function ResetPasswordContent() {
     setIsPending(false);
   };
 
-  if (error === "invalid_token") {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-4 text-center">
-          {/* Error Icon */}
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-            <svg
-              className="h-10 w-10 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          </div>
+  // if (error === "invalid_token") {
+  //   return (
+  //     <div className="space-y-6">
+  //       <div className="space-y-4 text-center">
+  //         {/* Error Icon */}
+  //         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+  //           <svg
+  //             className="h-10 w-10 text-red-600"
+  //             fill="none"
+  //             stroke="currentColor"
+  //             viewBox="0 0 24 24"
+  //           >
+  //             <path
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               strokeWidth={2}
+  //               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+  //             />
+  //           </svg>
+  //         </div>
 
-          {/* Content */}
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Invalid reset link
-            </h1>
-            <p className="text-muted-foreground mx-auto max-w-sm text-sm">
-              This password reset link is invalid or has expired. Please request
-              a new one.
-            </p>
-          </div>
-        </div>
+  //         {/* Content */}
+  //         <div className="space-y-2">
+  //           <h1 className="text-2xl font-semibold tracking-tight">
+  //             Invalid reset link
+  //           </h1>
+  //           <p className="text-muted-foreground mx-auto max-w-sm text-sm">
+  //             This password reset link is invalid or has expired. Please request
+  //             a new one.
+  //           </p>
+  //         </div>
+  //       </div>
 
-        {/* Actions */}
-        <div className="space-y-4">
-          <AuthForgotPassword.Link>
-            <Button className="w-full">Get new reset link</Button>
-          </AuthForgotPassword.Link>
+  //       {/* Actions */}
+  //       <div className="space-y-4">
+  //         <AuthForgotPassword.Link>
+  //           <Button className="w-full">Get new reset link</Button>
+  //         </AuthForgotPassword.Link>
 
-          <div className="text-muted-foreground text-center text-sm">
-            Remember your password?{" "}
-            <AuthSignIn.Link className="text-primary font-medium hover:underline">
-              Sign in
-            </AuthSignIn.Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //         <div className="text-muted-foreground text-center text-sm">
+  //           Remember your password?{" "}
+  //           <AuthSignIn.Link className="text-primary font-medium hover:underline">
+  //             Sign in
+  //           </AuthSignIn.Link>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">

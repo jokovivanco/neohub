@@ -1,6 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+
+import { Home } from "@/routes";
 import { LogOut, Settings, UserCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,20 +17,44 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { signOut } from "@/lib/auth/actions";
-
 interface UserMenuProps {
   user: {
     name?: string | null;
     email?: string | null;
     image?: string | null;
   };
-  onSignOut: () => Promise<void>;
+  onSignOut: () => Promise<
+    | {
+        ok: boolean;
+        error?: undefined;
+      }
+    | {
+        ok: boolean;
+        error: string;
+      }
+  >;
 }
 
-export default function UserMenu({ user }: UserMenuProps) {
+export default function UserMenu({ user, onSignOut }: UserMenuProps) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
   const handleSignOut = async () => {
-    await signOut();
+    startTransition(async () => {
+      try {
+        const response = await onSignOut();
+
+        if (response?.ok) {
+          toast.success("You have safely logged out");
+          router.push(Home());
+          router.refresh();
+        } else {
+          toast.error(response?.error);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
   };
 
   return (
@@ -61,11 +90,12 @@ export default function UserMenu({ user }: UserMenuProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="cursor-pointer text-red-600 focus:text-red-600"
+          className="cursor-pointer text-red-600 focus:text-red-600 disabled:pointer-events-none disabled:text-red-800"
           onClick={handleSignOut}
+          disabled={isPending}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          {isPending ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

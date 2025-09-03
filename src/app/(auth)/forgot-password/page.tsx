@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { AuthSignIn } from "@/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,19 +20,20 @@ import { Input } from "@/components/ui/input";
 
 import { forgetPassword } from "@/lib/auth/auth-client";
 import { forgotPasswordSchema } from "@/lib/auth/schema";
+import { type ForgotPasswordFormData } from "@/lib/auth/zodType";
 
 export default function ForgotPassword() {
   const [isPending, setIsPending] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
-  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
+  const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof forgotPasswordSchema>) => {
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsPending(true);
 
     const { error } = await forgetPassword({
@@ -81,8 +81,8 @@ export default function ForgotPassword() {
               Check your email
             </h1>
             <p className="text-muted-foreground mx-auto max-w-sm text-sm">
-              If an account exists with this email, you'll receive a password
-              reset link shortly.
+              If an account exists with this email, you&apos;ll receive a
+              password reset link shortly.
             </p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function ForgotPassword() {
           Forgot your password?
         </h1>
         <p className="text-muted-foreground text-sm">
-          Enter your email address and we'll send you a reset link
+          Enter your email address and we&apos;ll send you a reset link
         </p>
       </div>
 
