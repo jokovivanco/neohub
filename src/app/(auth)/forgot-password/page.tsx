@@ -111,7 +111,7 @@ export default function ForgotPassword() {
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
           Forgot your password?
         </h1>
         <p className="text-muted-foreground text-sm">
@@ -146,7 +146,7 @@ export default function ForgotPassword() {
         </form>
       </Form>
 
-      <div className="text-muted-foreground text-center text-sm">
+      <div className="text-muted-foreground mt-4 text-center text-sm">
         Remember your password?{" "}
         <AuthSignIn.Link className="text-primary font-medium hover:underline">
           Back to sign in
