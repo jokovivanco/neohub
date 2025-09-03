@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { randomUUID } from "crypto";
 import { and, eq, lt } from "drizzle-orm";
@@ -10,6 +11,7 @@ import { db } from "@/lib/db";
 import { guest } from "@/lib/db/schemas";
 
 import { signInSchema, signUpSchema } from "./schema";
+import { type SignInFormData } from "./zodType";
 
 const COOKIE_OPTIONS = {
   httpOnly: true as const,
@@ -72,18 +74,13 @@ export async function signUp(formData: FormData) {
     },
   });
 
-  // if come from guest session, then turn into user session
+  // delete guest session if any after sign in
   await migrateGuestToUser();
   return { ok: true, userId: res.user?.id };
 }
 
-export async function signIn(formData: FormData) {
-  const rawData = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
-
-  const data = signInSchema.parse(rawData);
+export async function signIn(payload: SignInFormData) {
+  const data = signInSchema.parse(payload);
 
   const res = await auth.api.signInEmail({
     body: {
@@ -92,7 +89,7 @@ export async function signIn(formData: FormData) {
     },
   });
 
-  // if come from guest session, then turn into user session
+  // delete guest session if any after sign in
   await migrateGuestToUser();
   return { ok: true, userId: res.user?.id };
 }
@@ -110,12 +107,29 @@ export async function getCurrentUser() {
   }
 }
 
-export async function signOut() {
-  await auth.api.signOut({ headers: {} });
-  return { ok: true };
+export async function signInGitHub() {
+  const response = await auth.api.signInSocial({
+    body: {
+      provider: "github",
+    },
+  });
+
+  if (response?.url) {
+    redirect(response.url);
+  }
+
+  // delete guest session if any after sign in
+  await migrateGuestToUser();
 }
 
-// guest session into user
+export async function signOut() {
+  await auth.api.signOut({
+    headers: await headers(),
+  });
+  redirect("/");
+}
+
+// guest session into user -- delete current guest session
 async function migrateGuestToUser() {
   const cookieStore = await cookies();
   const token = cookieStore.get("guest_session")?.value;

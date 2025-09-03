@@ -103,7 +103,7 @@ const Page = () => {
       <div className="space-y-4">
         <Button
           variant="outline"
-          className="disabled:bg-muted w-full disabled:pointer-events-none"
+          className="disabled:bg-muted! w-full disabled:pointer-events-none"
           onClick={handleSignInWithGithub}
           disabled={isPendingGithub}
         >

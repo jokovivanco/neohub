@@ -2,12 +2,12 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import ProductFilters, {
   type FilterOptions,
   type FilterState,
 } from "@/components/ProductFilters";
-import Hero from "@/components/section/Hero";
 
 const sampleProducts = [
   {

@@ -1,86 +1,12 @@
-"use client";
+import { AuthForgotPassword, AuthSignUp } from "@/routes";
 
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-
-import { AuthForgotPassword, AuthSignUp, Home } from "@/routes";
-import type { ErrorContext } from "@better-fetch/fetch";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { SiGithub } from "@icons-pack/react-simple-icons";
-import { toast } from "sonner";
-import type { z } from "zod";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import SignInForm from "@/components/auth/SignInForm";
+import SignInGithubButton from "@/components/auth/SignInGithubButton";
 import { Separator } from "@/components/ui/separator";
 
-import { signIn } from "@/lib/auth/auth-client";
-import { signInSchema } from "@/lib/auth/schema";
-
-type SignInFormData = z.infer<typeof signInSchema>;
+import { signIn, signInGitHub } from "@/lib/auth/actions";
 
 const Page = () => {
-  const router = useRouter();
-  const form = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const handleFormSubmit = async (values: SignInFormData) => {
-    try {
-      const { data, error } = await signIn.email({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        toast.error("Sign in failed", {
-          description:
-            error.message ?? "Please check your credentials and try again.",
-        });
-        return;
-      }
-
-      if (data) {
-        toast.success("Welcome back!");
-        router.push(Home());
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Sign in error:", error);
-      toast.error("Sign in failed", {
-        description: "An unexpected error occurred. Please try again.",
-      });
-    }
-  };
-
-  const handleSignInWithGithub = async () => {
-    await signIn.social(
-      { provider: "github" },
-      {
-        onSuccess: async () => {
-          router.push(Home());
-          router.refresh();
-        },
-        onError: (ctx: ErrorContext) => {
-          toast.error("GitHub sign in failed", {
-            description:
-              ctx.error.message ??
-              "Something went wrong with GitHub authentication.",
-          });
-        },
-      },
-    );
-  };
-
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
@@ -91,14 +17,7 @@ const Page = () => {
       </div>
 
       <div className="space-y-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleSignInWithGithub}
-        >
-          <SiGithub className="mr-2 h-4 w-4" />
-          Continue with GitHub
-        </Button>
+        <SignInGithubButton onSubmit={signInGitHub} />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -111,52 +30,7 @@ const Page = () => {
           </div>
         </div>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleFormSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="name@example.com"
-                      autoComplete="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      autoComplete="current-password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full">
-              Sign in
-            </Button>
-          </form>
-        </Form>
+        <SignInForm onSubmit={signIn} />
       </div>
 
       <div className="space-y-4 text-center text-sm">
