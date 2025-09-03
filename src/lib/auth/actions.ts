@@ -11,7 +11,7 @@ import { db } from "@/lib/db";
 import { guest } from "@/lib/db/schemas";
 
 import { signInSchema, signUpSchema } from "./schema";
-import { type SignInFormData } from "./zodType";
+import { type SignInFormData, type SignUpFormData } from "./zodType";
 
 const COOKIE_OPTIONS = {
   httpOnly: true as const,
@@ -56,15 +56,8 @@ export async function guestSession() {
   return { sessionToken: token };
 }
 
-export async function signUp(formData: FormData) {
-  const rawData = {
-    name: formData.get("name") as string,
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-    confirmPassword: formData.get("confirmPassword") as string,
-  };
-
-  const data = signUpSchema.parse(rawData);
+export async function signUp(payload: SignUpFormData) {
+  const data = signUpSchema.parse(payload);
 
   const res = await auth.api.signUpEmail({
     body: {
