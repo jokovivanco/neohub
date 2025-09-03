@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 
 import { AuthSignIn, Home } from "@/routes";
+import type { ErrorContext } from "@better-fetch/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { toast } from "sonner";
@@ -25,94 +26,89 @@ import { Separator } from "@/components/ui/separator";
 import { signIn, signUp } from "@/lib/auth/auth-client";
 import { signUpSchema } from "@/lib/auth/schema";
 
-export default function SignUp() {
+type SignUpFormData = z.infer<typeof signUpSchema>;
+
+const Page = () => {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-
-  const form = useForm<z.infer<typeof signUpSchema>>({
+  const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
+  const [isPending, startTransition] = useTransition();
+  const [isPendingGithub, startTransitionGithub] = useTransition();
 
-  const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
-    await signUp.email(
-      {
-        email: values.email,
-        password: values.password,
-        name: values.name,
-      },
-      {
-        onRequest: () => {
-          setPending(true);
-        },
-        onSuccess: () => {
-          toast.success("Account created successfully!", {
-            description: "Please check your email to verify your account.",
+  const handleFormSubmit = async (values: SignUpFormData) => {
+    startTransition(async () => {
+      try {
+        const { data, error } = await signUp.email({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        });
+
+        if (error) {
+          toast.error("Sign up failed", {
+            description:
+              error.message ?? "Please check your information and try again.",
           });
+          return;
+        }
 
+        if (data) {
+          toast.success("Account created successfully!");
           router.push(Home());
           router.refresh();
-        },
-        onError: (ctx) => {
-          toast.error("Sign up failed", {
-            description: ctx.error.message ?? "Please try again later.",
-          });
-        },
-      },
-    );
-    setPending(false);
+        }
+      } catch (error) {
+        console.error("Sign up error:", error);
+        toast.error("Sign up failed", {
+          description: "An unexpected error occurred. Please try again.",
+        });
+      }
+    });
   };
 
-  const handleSignUpWithGithub = async () => {
-    await signIn.social(
-      {
-        provider: "github",
-      },
-      {
-        onRequest: () => {
-          setPending(true);
+  const handleSignInWithGithub = async () => {
+    startTransitionGithub(async () => {
+      await signIn.social(
+        { provider: "github" },
+        {
+          onSuccess: async () => {
+            router.push(Home());
+            router.refresh();
+          },
+          onError: (ctx: ErrorContext) => {
+            toast.error("GitHub sign in failed", {
+              description:
+                ctx.error.message ??
+                "Something went wrong with GitHub authentication.",
+            });
+          },
         },
-        onSuccess: async () => {
-          router.push(Home());
-          router.refresh();
-        },
-        onError: (ctx) => {
-          toast.error("GitHub sign up failed", {
-            description:
-              ctx.error.message ??
-              "Something went wrong with GitHub authentication.",
-          });
-        },
-      },
-    );
-    setPending(false);
+      );
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Create an account
+          Create your account
         </h1>
         <p className="text-muted-foreground text-sm">
-          Enter your details to get started
+          Enter your information to create a new account
         </p>
       </div>
 
       <div className="space-y-4">
         <Button
           variant="outline"
-          className="w-full"
-          onClick={handleSignUpWithGithub}
-          disabled={pending}
+          className="disabled:bg-muted w-full disabled:pointer-events-none"
+          onClick={handleSignInWithGithub}
+          disabled={isPendingGithub}
         >
           <SiGithub className="mr-2 h-4 w-4" />
-          Continue with GitHub
+          {isPendingGithub ? "Continue with GitHub..." : "Continue with GitHub"}
         </Button>
 
         <div className="relative">
@@ -127,17 +123,19 @@ export default function SignUp() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleFormSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full name</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
-                      type="text"
-                      placeholder="John Doe"
+                      placeholder="Enter your name"
                       autoComplete="name"
                       {...field}
                     />
@@ -173,7 +171,7 @@ export default function SignUp() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Create a strong password"
+                      placeholder="Enter your password"
                       autoComplete="new-password"
                       {...field}
                     />
@@ -187,7 +185,7 @@ export default function SignUp() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -200,8 +198,12 @@ export default function SignUp() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? "Creating account..." : "Create account"}
+            <Button
+              type="submit"
+              className="disabled:bg-muted-foreground w-full disabled:pointer-events-none"
+              disabled={isPending}
+            >
+              {isPending ? "Signing up..." : "Sign up"}
             </Button>
           </form>
         </Form>
@@ -215,4 +217,6 @@ export default function SignUp() {
       </div>
     </div>
   );
-}
+};
+
+export default Page;

@@ -30,7 +30,7 @@ export async function sendMail({
   html: string;
 }): Promise<void> {
   const transporter = nodemailer.createTransport({
-    service: process.env.MAIL_HOST,
+    host: env.MAIL_HOST,
     auth: { user: env.MAIL_USERNAME, pass: env.MAIL_PASSWORD },
   });
 

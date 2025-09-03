@@ -1,7 +1,6 @@
 {
-  "enabledMcpjsonServers": [
-    "shadcn",
-    "context7",
-    "playwright"
-  ]
+  "enabledMcpjsonServers": ["shadcn", "context7", "playwright"],
+  "permissions": {
+    "allow": ["mcp__playwright__browser_click"]
+  }
 }

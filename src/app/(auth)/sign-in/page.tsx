@@ -25,56 +25,47 @@ import { Separator } from "@/components/ui/separator";
 import { signIn } from "@/lib/auth/auth-client";
 import { signInSchema } from "@/lib/auth/schema";
 
-export default function SignIn() {
-  const router = useRouter();
+type SignInFormData = z.infer<typeof signInSchema>;
 
-  const form = useForm<z.infer<typeof signInSchema>>({
+const Page = () => {
+  const router = useRouter();
+  const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const handleCredentialsSignIn = async (
-    values: z.infer<typeof signInSchema>,
-  ) => {
-    await signIn.email(
-      {
+  const handleFormSubmit = async (values: SignInFormData) => {
+    try {
+      const { data, error } = await signIn.email({
         email: values.email,
         password: values.password,
-      },
-      {
-        onRequest: () => {
-          // setPendingCredentials(true);
-        },
-        onSuccess: async () => {
-          router.push(Home());
-          router.refresh();
-          toast.success("Welcome back!", {
-            description: "You have successfully signed in.",
-          });
-        },
-        onError: (ctx: ErrorContext) => {
-          toast.error("Sign in failed", {
-            description:
-              ctx.error.message ??
-              "Please check your credentials and try again.",
-          });
-        },
-      },
-    );
+      });
+
+      if (error) {
+        toast.error("Sign in failed", {
+          description:
+            error.message ?? "Please check your credentials and try again.",
+        });
+        return;
+      }
+
+      if (data) {
+        toast.success("Welcome back!");
+        router.push(Home());
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      toast.error("Sign in failed", {
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
   };
 
   const handleSignInWithGithub = async () => {
     await signIn.social(
+      { provider: "github" },
       {
-        provider: "github",
-      },
-      {
-        onRequest: () => {
-          // setPendingGithub(true);
-        },
         onSuccess: async () => {
           router.push(Home());
           router.refresh();
@@ -122,7 +113,7 @@ export default function SignIn() {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleCredentialsSignIn)}
+            onSubmit={form.handleSubmit(handleFormSubmit)}
             className="space-y-4"
           >
             <FormField
@@ -174,7 +165,7 @@ export default function SignIn() {
         </AuthForgotPassword.Link>
 
         <div className="text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <AuthSignUp.Link className="text-primary font-medium hover:underline">
             Sign up
           </AuthSignUp.Link>
@@ -182,4 +173,6 @@ export default function SignIn() {
       </div>
     </div>
   );
-}
+};
+
+export default Page;

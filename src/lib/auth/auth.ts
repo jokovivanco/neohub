@@ -1,12 +1,12 @@
-import "server-only";
-
 import env from "@/env";
-import { sendMail } from "@/server/Actions/mailAction";
-import { db } from "@/server/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { admin, openAPI } from "better-auth/plugins";
+import { openAPI } from "better-auth/plugins";
+import { v4 as uuidv4 } from "uuid";
+
+import { sendMail } from "@/lib/actions/mail";
+import { db } from "@/lib/db";
 
 export type Session = typeof auth.$Infer.Session;
 
@@ -14,25 +14,14 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-
-  plugins: [openAPI(), admin(), nextCookies()], //nextCookies() should be last plugin in the list
+  plugins: [openAPI(), nextCookies()], //nextCookies() should be last plugin in the list
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // Cache duration in seconds
+      maxAge: 60 * 60 * 24 * 7,
     },
   },
   user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        default: "user",
-        required: false,
-        defaultValue: "user",
-      },
-    },
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ newEmail, url }) => {
@@ -50,7 +39,6 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -65,6 +53,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
+    expiresIn: 3600,
     sendVerificationEmail: async ({ user, token }) => {
       const verificationUrl = `${env.BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${env.EMAIL_VERIFICATION_CALLBACK_URL}`;
       await sendMail({
@@ -72,6 +61,21 @@ export const auth = betterAuth({
         subject: "Verify your email address",
         html: `<p>Click the link to verify your email: ${verificationUrl}</p>`,
       });
+    },
+  },
+  advanced: {
+    generateId: () => uuidv4(),
+    cookies: {
+      session_token: {
+        name: "auth_session",
+        attributes: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+        },
+      },
     },
   },
 });
