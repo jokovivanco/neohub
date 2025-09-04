@@ -9,6 +9,7 @@ import * as AuthSignUpRoute from "@/app/(auth)/sign-up/page.info";
 import * as DashboardAdminRoute from "@/app/(dashboard)/admin/page.info";
 import * as DashboardUserRoute from "@/app/(dashboard)/user/page.info";
 import * as RootRoute from "@/app/(root)/page.info";
+import * as UserProfileRoute from "@/app/(root)/profile/page.info";
 import * as ApiAuthAllRoute from "@/app/api/auth/[...all]/route.info";
 import * as HomeRoute from "@/app/page.info";
 
@@ -53,6 +54,10 @@ export const DashboardUser = makeRoute("/(dashboard)/user", {
 export const Root = makeRoute("/(root)", {
   ...defaultInfo,
   ...RootRoute.Route,
+});
+export const UserProfile = makeRoute("/(root)/profile", {
+  ...defaultInfo,
+  ...UserProfileRoute.Route,
 });
 export const ApiAuthAll = makeRoute("/api/auth/[...all]", {
   ...defaultInfo,

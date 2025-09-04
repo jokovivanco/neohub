@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { Home } from "@/routes";
+import { Home, UserProfile } from "@/routes";
 import { LogOut, Settings, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,7 +80,10 @@ export default function UserMenu({ user, onSignOut }: UserMenuProps) {
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => router.push(UserProfile())}
+        >
           <UserCircle className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>
