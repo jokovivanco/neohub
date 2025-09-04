@@ -18,7 +18,9 @@ import UserMenu from "./user-menu";
 interface NavbarClientProps {
   navigationItems: Array<{ name: string; href: string }>;
   session: Session | null;
-  onSignOut: () => Promise<void>;
+  onSignOut: () => Promise<
+    { ok: boolean; error?: undefined } | { ok: boolean; error: string }
+  >;
 }
 
 export default function NavbarClient({

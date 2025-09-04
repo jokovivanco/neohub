@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { Home } from "@/routes";
+import { Home, UserProfile, UserSettings } from "@/routes";
 import { LogOut, Settings, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -79,11 +79,17 @@ export default function MobileUserSection({
       </div>
 
       <div className="mt-2 space-y-1">
-        <button className="text-foreground/80 hover:bg-accent hover:text-foreground flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors">
+        <button
+          className="text-foreground/80 hover:bg-accent hover:text-foreground flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors"
+          onClick={() => router.push(UserProfile())}
+        >
           <UserCircle className="mr-3 h-4 w-4" />
           Profile
         </button>
-        <button className="text-foreground/80 hover:bg-accent hover:text-foreground flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors">
+        <button
+          className="text-foreground/80 hover:bg-accent hover:text-foreground flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors"
+          onClick={() => router.push(UserSettings())}
+        >
           <Settings className="mr-3 h-4 w-4" />
           Settings
         </button>
